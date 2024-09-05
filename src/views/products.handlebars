@@ -1,0 +1,107 @@
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .card-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .custom-card {
+        width: 300px;
+        border: 1px solid #e2e2e2;
+        border-radius: 10px;
+        box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, 0.1);
+    }
+
+    .custom-card .card-img-top {
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .custom-card .card-body {
+        padding: 20px;
+    }
+
+    .custom-card .card-title {
+        font-size: 1.5rem;
+        color: #333;
+    }
+
+    .custom-card .card-text {
+        font-size: 1rem;
+        color: #666;
+    }
+
+    .custom-card .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .custom-card .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
+</style>
+
+<div class="card-wrapper">
+    <div class="custom-card">
+        <img src="{{product.thumbnail}}" class="card-img-top" alt="Producto">
+        <div class="card-body">
+            <h5 class="card-title">{{product.title}}</h5>
+            <p class="card-text">{{product.description}}</p>
+            <p class="card-text">Stock: {{product.stock}}</p>
+            <p class="card-text">Precio: {{product.price}}</p>
+            <form id="addToCartForm" data-cid="668d7e98fca562012be5d451" data-pid="{{product._id}}" method="POST">
+                <div class="form-row align-items-center">
+                    <div class="col-auto">
+                        <label for="quantity" class="sr-only">Cantidad:</label>
+                        <input type="text" class="form-control mb-2" id="quantity" name="quantity"
+                            placeholder="Cantidad" required>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary mb-2">Añadir al carrito</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('addToCartForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const form = event.target;
+        const cid = form.getAttribute('data-cid');
+        const pid = form.getAttribute('data-pid');
+        const quantity = form.quantity.value;
+        if (!quantity || isNaN(quantity) || quantity <= 0) {
+            alert('Por favor, ingrese una cantidad válida.');
+            return;
+        }
+        fetch(`http://localhost:8080/api/carts/${cid}/products/${pid}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ quantity: parseInt(quantity, 10) })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(`Error: ${data.error}`);
+                } else {
+                    alert('Producto añadido al carrito correctamente.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ocurrió un error al añadir el producto al carrito.');
+            });
+    });
+</script>

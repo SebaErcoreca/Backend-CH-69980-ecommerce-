@@ -1,0 +1,262 @@
+<style>
+    body {
+        background-color: #1d1d1d;
+        color: white;
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+    }
+
+    .container-fluid {
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+        padding: 0;
+    }
+
+    .sidebar {
+        background-color: #2c2c2c;
+        padding: 20px;
+        overflow-y: auto;
+    }
+
+    .main-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        width: 50%;
+    }
+
+    .product-form {
+        margin-bottom: 20px;
+        float: left;
+    }
+
+    .form-group {
+        margin: 0;
+    }
+
+    .product-cards-container {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .custom-card {
+        flex: 0 0 calc(34% - 20px);
+        border: 1px solid #e2e2e2;
+        border-radius: 10px;
+        box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+        color: #000;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .custom-card .card-img-top {
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        height: 150px;
+        object-fit: cover;
+    }
+
+    .custom-card .card-body {
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+    }
+
+    .custom-card .card-title {
+        font-size: 1.2rem;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+    .custom-card .card-text {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 5px;
+    }
+
+    .custom-card .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+        width: 100%;
+        margin-top: auto;
+    }
+
+    .custom-card .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .pagination button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        margin: 0 5px;
+        cursor: pointer;
+    }
+
+    .pagination button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+    @media (max-width: 992px) {
+        .custom-card {
+            flex: 0 0 calc(50% - 20px);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .custom-card {
+            flex: 0 0 calc(100% - 20px);
+        }
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="sidebar">
+        <div class="product-form">
+            <h3 class="text-center">Crear producto</h3>
+            <form id="createProduct" action="/api/products" method="post">
+                <div class="form-group">
+                    <label for="title">Título:</label>
+                    <input type="text" class="form-control" id="title" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Descripción:</label>
+                    <input type="text" class="form-control" id="description" name="description" required>
+                </div>
+                <div class="form-group">
+                    <label for="thumbnail">Imagen:</label>
+                    <input type="text" class="form-control" id="thumbnail" name="thumbnail" required>
+                </div>
+                <div class="form-group">
+                    <label for="price">Precio:</label>
+                    <input type="number" class="form-control" id="price" name="price" required>
+                </div>
+                <div class="form-group">
+                    <label for="code">Código:</label>
+                    <input type="text" class="form-control" id="code" name="code" required>
+                </div>
+                <div class="form-group">
+                    <label for="stock">Stock:</label>
+                    <input type="number" class="form-control" id="stock" name="stock" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Crear producto</button>
+            </form>
+        </div>
+        <div class="sidebar-right">
+            <hr>
+            <h4 class="text-center">Filtrado</h4>
+            <div class="form-group">
+                <label for="sortOrder">Ordenar:</label>
+                <select class="form-control" id="sortOrder" name="sortOrder">
+                    <option value="asc">Ascendente</option>
+                    <option value="desc">Descendente</option>
+                </select>
+            </div>
+            <div class="pagination">
+                <button id="prevPage" class="btn btn-secondary" disabled>Anterior</button>
+                <button id="nextPage" class="btn btn-primary" disabled>Siguiente</button>
+            </div>
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="product-cards-container">
+            {{#each products}}
+
+            {{/each}}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('sortOrder').addEventListener('change', function () {
+        fetchProducts(this.value, 1);
+    });
+
+    let currentPage = 1;
+    const limit = 10;
+
+    async function fetchProducts(sortOrder, page = 1) {
+        try {
+            const response = await fetch(`/api/products?limit=${limit}&page=${page}&sort=${sortOrder}`);
+            const data = await response.json();
+            const productContainer = document.querySelector('.product-cards-container');
+            productContainer.innerHTML = '';
+
+            data.payload.forEach(product => {
+                const productCard = `
+                    <div class="custom-card">
+                        <img src="${product.thumbnail}" class="card-img-top" alt="Producto">
+                        <div class="card-body">
+                            <h5 class="card-title">${product.title}</h5>
+                            <p class="card-text">${product.description}</p>
+                            <p class="card-text">Stock: ${product.stock}</p>
+                            <p class="card-text">Precio: ${product.price}</p>
+                            <button class="btn btn-primary btn-block add-to-cart" data-product-id="${product._id}">Añadir al carrito</button>
+                        </div>
+                    </div>
+                `;
+                productContainer.innerHTML += productCard;
+            });
+
+            currentPage = data.page;
+            document.getElementById('prevPage').disabled = !data.hasPrevPage;
+            document.getElementById('nextPage').disabled = !data.hasNextPage;
+
+        } catch (error) {
+            console.error('Error al recuperar productos:', error);
+        }
+    }
+
+    document.getElementById('prevPage').addEventListener('click', function () {
+        fetchProducts(document.getElementById('sortOrder').value, currentPage - 1);
+    });
+
+    document.getElementById('nextPage').addEventListener('click', function () {
+        fetchProducts(document.getElementById('sortOrder').value, currentPage + 1);
+    });
+
+    fetchProducts(document.getElementById('sortOrder').value);
+
+    async function addToCart(productId, cartId) {
+        try {
+            const response = await fetch(`http://localhost:8080/api/carts/${cartId}/products/${productId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (!response.ok) {
+                throw new Error('Error al agregar al carrito');
+            }
+            const data = await response.json();
+            console.log('Producto agreado al carrito:', data);
+        } catch (error) {
+            console.error('Error al agregar al carrito:', error.message);
+        }
+    }
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="index.js"></script>
