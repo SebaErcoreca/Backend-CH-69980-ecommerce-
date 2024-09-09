@@ -56,16 +56,16 @@
             <h5 class="card-title">{{product.title}}</h5>
             <p class="card-text">{{product.description}}</p>
             <p class="card-text">Stock: {{product.stock}}</p>
-            <p class="card-text">Precio: {{product.price}}</p>
-            <form id="addToCartForm" data-cid="668d7e98fca562012be5d451" data-pid="{{product._id}}" method="POST">
+            <p class="card-text">Price: {{product.price}}</p>
+            <form id="addToCartForm" data-cid="66888f9052a8d35d58a99a08" data-pid="{{product._id}}" method="POST">
                 <div class="form-row align-items-center">
                     <div class="col-auto">
-                        <label for="quantity" class="sr-only">Cantidad:</label>
+                        <label for="quantity" class="sr-only">Quantity:</label>
                         <input type="text" class="form-control mb-2" id="quantity" name="quantity"
                             placeholder="Cantidad" required>
                     </div>
                     <div class="col-auto">
-                        <button type="submit" class="btn btn-primary mb-2">Añadir al carrito</button>
+                        <button type="submit" class="btn btn-primary mb-2">Add to cart</button>
                     </div>
                 </div>
             </form>
@@ -81,7 +81,7 @@
         const pid = form.getAttribute('data-pid');
         const quantity = form.quantity.value;
         if (!quantity || isNaN(quantity) || quantity <= 0) {
-            alert('Por favor, ingrese una cantidad válida.');
+            alert('Please add a valid quantity');
             return;
         }
         fetch(`http://localhost:8080/api/carts/${cid}/products/${pid}`, {
@@ -96,12 +96,12 @@
                 if (data.error) {
                     alert(`Error: ${data.error}`);
                 } else {
-                    alert('Producto añadido al carrito correctamente.');
+                    alert('Product added to cart successfully');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Ocurrió un error al añadir el producto al carrito.');
+                alert('An error occurred while adding the product to cart');
             });
     });
 </script>

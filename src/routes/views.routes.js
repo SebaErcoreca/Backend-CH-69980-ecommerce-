@@ -1,8 +1,7 @@
 import { Router } from "express";
-import { ProductManager } from "../managers/products.js";
-import { cartManager } from "../managers/cart.js";
+import { productManager } from "../daos/productsDAO.js";
+import { CartDao } from "../daos/CartDao.js";
 
-const productManager = new ProductManager();
 const viewsRouter = Router();
 
 viewsRouter.get('/', async (req, res) => {
@@ -13,7 +12,7 @@ viewsRouter.get('/', async (req, res) => {
         const products = await productManager.getProducts({ limit, page, sort });
 
         if (!products || products.length === 0) {
-            res.status(404).render('home', { error: "No hay productos disponibles" });
+            res.status(404).render('home', { error: "No products available" });
         } else {
             res.render('home', { products });
         }
@@ -28,7 +27,7 @@ viewsRouter.get('/products/:pid', async (req, res) => {
         const product = await productManager.getProductById(pid);
 
         if (!product) {
-            return res.status(404).json({ message: "No hay productos disponibles" });
+            return res.status(404).json({ message: "No products available" });
         }
         res.render('products', { product });
     } catch (error) {
@@ -39,14 +38,14 @@ viewsRouter.get('/products/:pid', async (req, res) => {
 viewsRouter.get("/carts/:cid", async (req, res) => {
     try {
         const { cid } = req.params;
-        const cart = await cartManager.getCartById(cid);
+        const cart = await CartDao.getCartById(cid);
 
         if (!cart) {
-            return res.status(404).json({ message: "Carrito no encontrado" });
+            return res.status(404).json({ message: "Cart not found" });
         }
         const { productId, quantity } = req.body;
         if (productId && quantity) {
-            const updatedCart = await cartManager.addProductToCart(cid, productId, quantity);
+            const updatedCart = await CartDao.addProductToCart(cid, productId, quantity);
             res.render("carts", { cart: updatedCart });
         }
         res.render("carts", { cart });
@@ -59,7 +58,7 @@ viewsRouter.get('/realtimeproducts/', async (req, res) => {
     const products = await productManager.getProducts();
 
     if (!products || products.length === 0) {
-        throw new Error("No hay productos disponibles", 404);
+        throw new Error("No products available", 404);
     } else {
         res.render('realTimeProducts', { products });
     }

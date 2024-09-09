@@ -35,5 +35,5 @@ socketClient.on("productCreated", (data) => {
 });
 
 socketClient.on("productError", (error) => {
-    console.error("Error al crear producto:", error.message);
+    console.error("Error", error.message);
 });

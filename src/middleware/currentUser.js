@@ -1,5 +1,6 @@
 import passport from 'passport';
 import { ExtractJwt, Strategy as JwtStrategy } from 'passport-jwt';
+import UserDTO from '../dtos/UserDTO.js';
 import User from '../models/User.js';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -33,13 +34,25 @@ passport.use(
 );
 
 const currentUser = (req, res, next) => {
-    passport.authenticate('jwt', { session: false }, (err, user, info) => {
-        if (err) return next(err);
+    passport.authenticate('jwt', { session: false }, async (err, user, info) => {
+        if (err) {
+            return next(err);
+        }
         if (!user) {
             return res.status(401).json({ message: 'Unauthorized' });
         }
-        req.user = user;
-        next();
+
+        try {
+            const fullUser = await User.findById(user._id);
+            if (!fullUser) {
+                return res.status(401).json({ message: 'Unauthorized' });
+            }
+            const userDTO = new UserDTO(fullUser);
+            req.user = userDTO;
+            next();
+        } catch (error) {
+            next(error);
+        }
     })(req, res, next);
 };
 

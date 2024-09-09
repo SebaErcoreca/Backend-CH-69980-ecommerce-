@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { ProductManager } from '../managers/products.js';
+import { productManager as manager } from '../daos/productsDAO.js';
 import Product from '../models/Product.js';
+import authorizeRole from '../middleware/guard.auth.js';
 
 const prodsRouter = Router();
-const manager = new ProductManager();
 
 prodsRouter.get('/', async (req, res) => {
     try {
@@ -12,7 +12,6 @@ prodsRouter.get('/', async (req, res) => {
         const pageInt = parseInt(page, 10);
         let filter = {};
 
-        // Filtro de búsqueda
         if (query) {
             filter.$or = [
                 { title: new RegExp(query, 'i') },
@@ -20,22 +19,18 @@ prodsRouter.get('/', async (req, res) => {
             ];
         }
 
-        // Obtener productos filtrados
         let products = await Product.find(filter);
 
-        // Ordenamiento
         if (sort) {
             const sortOrder = sort === 'asc' ? 1 : -1;
             products = products.sort((a, b) => (a.price - b.price) * sortOrder);
         }
 
-        // Paginación
         const startIndex = (pageInt - 1) * limitInt;
         const endIndex = startIndex + limitInt;
         const paginatedProducts = products.slice(startIndex, endIndex);
         const totalPages = Math.ceil(products.length / limitInt);
 
-        // Objeto de respuesta
         const response = {
             status: 'success',
             payload: paginatedProducts,
@@ -59,13 +54,13 @@ prodsRouter.get('/:id', async (req, res) => {
     res.send(await manager.getProductById(req.params.id));
 });
 
-prodsRouter.post('/', async (req, res) => {
+prodsRouter.post('/', authorizeRole('admin'), async (req, res) => {
     const { title, description, price, thumbnail, code, stock, category } = req.body;
 
     try {
-        const confirmacion = await manager.getProductByCode(code);
-        if (confirmacion) {
-            return res.status(400).send("Producto ya existente");
+        const confirmation = await manager.getProductByCode(code);
+        if (confirmation) {
+            return res.status(400).send("Product already exists");
         }
         const newProduct = await manager.addProduct(title, description, price, thumbnail, code, stock, category);
         res.send(newProduct);
@@ -74,28 +69,28 @@ prodsRouter.post('/', async (req, res) => {
     }
 });
 
-prodsRouter.put('/:id', async (req, res) => {
+prodsRouter.put('/:id', authorizeRole('admin'), async (req, res) => {
     const { id } = req.params;
     const updatedProduct = req.body;
-    const confirmacion = await manager.getProductById(id);
+    const confirmation = await manager.getProductById(id);
 
-    if (confirmacion) {
+    if (confirmation) {
         const result = await manager.updateProduct(id, updatedProduct);
         res.status(200).send(result);
     } else {
-        res.status(404).send("Producto no encontrado");
+        res.status(404).send("Product not found");
     }
 });
 
-prodsRouter.delete('/:id', async (req, res) => {
+prodsRouter.delete('/:id', authorizeRole('admin'), async (req, res) => {
     const { id } = req.params;
-    const confirmacion = await manager.getProductById(id);
+    const confirmation = await manager.getProductById(id);
 
-    if (confirmacion) {
+    if (confirmation) {
         await manager.removeProduct(id);
-        res.status(200).send("producto eliminado");
+        res.status(200).send("Product deleted successfully");
     } else {
-        res.status(404).send("producto no encontrado");
+        res.status(404).send("Product not found");
     }
 });
 

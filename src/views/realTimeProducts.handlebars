@@ -134,48 +134,48 @@
 <div class="container-fluid">
     <div class="sidebar">
         <div class="product-form">
-            <h3 class="text-center">Crear producto</h3>
+            <h3 class="text-center">Create product</h3>
             <form id="createProduct" action="/api/products" method="post">
                 <div class="form-group">
-                    <label for="title">Título:</label>
+                    <label for="title">Title:</label>
                     <input type="text" class="form-control" id="title" name="title" required>
                 </div>
                 <div class="form-group">
-                    <label for="description">Descripción:</label>
+                    <label for="description">Description:</label>
                     <input type="text" class="form-control" id="description" name="description" required>
                 </div>
                 <div class="form-group">
-                    <label for="thumbnail">Imagen:</label>
-                    <input type="text" class="form-control" id="thumbnail" name="thumbnail" required>
+                    <label for="thumbnail">Image:</label>
+                    <input type="text" class="form-control" id="thumbnail" name="thumbnail">
                 </div>
                 <div class="form-group">
-                    <label for="price">Precio:</label>
+                    <label for="price">Price:</label>
                     <input type="number" class="form-control" id="price" name="price" required>
                 </div>
                 <div class="form-group">
-                    <label for="code">Código:</label>
+                    <label for="code">Code:</label>
                     <input type="text" class="form-control" id="code" name="code" required>
                 </div>
                 <div class="form-group">
                     <label for="stock">Stock:</label>
                     <input type="number" class="form-control" id="stock" name="stock" required>
                 </div>
-                <button type="submit" class="btn btn-primary btn-block">Crear producto</button>
+                <button type="submit" class="btn btn-primary btn-block">Create product</button>
             </form>
         </div>
         <div class="sidebar-right">
             <hr>
-            <h4 class="text-center">Filtrado</h4>
+            <h4 class="text-center">Filter</h4>
             <div class="form-group">
-                <label for="sortOrder">Ordenar:</label>
+                <label for="sortOrder">Order:</label>
                 <select class="form-control" id="sortOrder" name="sortOrder">
-                    <option value="asc">Ascendente</option>
-                    <option value="desc">Descendente</option>
+                    <option value="asc">A-Z</option>
+                    <option value="desc">Z-A</option>
                 </select>
             </div>
             <div class="pagination">
-                <button id="prevPage" class="btn btn-secondary" disabled>Anterior</button>
-                <button id="nextPage" class="btn btn-primary" disabled>Siguiente</button>
+                <button id="prevPage" class="btn btn-secondary" disabled>Previous</button>
+                <button id="nextPage" class="btn btn-primary" disabled>Next</button>
             </div>
         </div>
     </div>
@@ -206,13 +206,13 @@
             data.payload.forEach(product => {
                 const productCard = `
                     <div class="custom-card">
-                        <img src="${product.thumbnail}" class="card-img-top" alt="Producto">
+                        <img src="${product.thumbnail}" class="card-img-top" alt="Product">
                         <div class="card-body">
                             <h5 class="card-title">${product.title}</h5>
                             <p class="card-text">${product.description}</p>
                             <p class="card-text">Stock: ${product.stock}</p>
-                            <p class="card-text">Precio: ${product.price}</p>
-                            <button class="btn btn-primary btn-block add-to-cart" data-product-id="${product._id}">Añadir al carrito</button>
+                            <p class="card-text">Price: ${product.price}</p>
+                            <button class="btn btn-primary btn-block add-to-cart" data-product-id="${product._id}">Add to cart</button>
                         </div>
                     </div>
                 `;
@@ -224,7 +224,7 @@
             document.getElementById('nextPage').disabled = !data.hasNextPage;
 
         } catch (error) {
-            console.error('Error al recuperar productos:', error);
+            console.error('Error', error);
         }
     }
 
@@ -247,12 +247,12 @@
                 }
             });
             if (!response.ok) {
-                throw new Error('Error al agregar al carrito');
+                throw new Error('Error');
             }
             const data = await response.json();
-            console.log('Producto agreado al carrito:', data);
+            console.log('Producto added to cart', data);
         } catch (error) {
-            console.error('Error al agregar al carrito:', error.message);
+            console.error('Error', error.message);
         }
     }
 

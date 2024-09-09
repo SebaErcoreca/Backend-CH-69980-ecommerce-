@@ -2,38 +2,39 @@ import express from 'express';
 import passport from 'passport';
 import { generateToken } from '../utils/jwt.js';
 import currentUser from '../middleware/currentUser.js';
+import UserDTO from '../dtos/UserDTO.js';
+import authorizeRole from '../middleware/guard.auth.js';
 
 const authRouter = express.Router();
 
-// Ruta para login
 authRouter.post('/login', (req, res, next) => {
     passport.authenticate('local', (err, user, info) => {
         if (err) return next(err);
-        if (!user) return res.status(401).json({ message: info.message || 'Autenticación fallida' });
+        if (!user) return res.status(401).json({ message: info.message || 'Failed to authenticate' });
         req.logIn(user, (err) => {
             if (err) return next(err);
             const token = generateToken(user);
             res.cookie('jwt', token, { httpOnly: true });
-            return res.status(200).json({ message: 'Autenticación exitosa', user, token });
+            return res.status(200).json({ message: 'Successfully authenticated', user, token });
         });
     })(req, res, next);
 });
 
-// Ruta para logout
 authRouter.post('/logout', (req, res) => {
     res.clearCookie('jwt');
-    res.status(200).json({ message: 'Sesión cerrada correctamente' });
+    res.status(200).json({ message: 'Session closed' });
 });
 
-// Ruta para obtener datos del usuario
-authRouter.get('/current', currentUser, (req, res) => {
+authRouter.get('/current', authorizeRole('admin'), currentUser, (req, res) => {
     if (req.user) {
+        const userDTO = new UserDTO(req.user);
+
         return res.status(200).json({
-            message: 'Usuario autenticado',
-            user: req.user,
+            message: 'Authenticated user',
+            user: userDTO,
         });
     } else {
-        return res.status(401).json({ message: 'No autorizado' });
+        return res.status(401).json({ message: 'Unauthorized' });
     }
 });
 

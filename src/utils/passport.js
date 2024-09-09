@@ -10,16 +10,16 @@ passport.use(new LocalStrategy({
     try {
         const user = await User.findOne({ email });
         if (!user) {
-            return done(null, false, { message: 'Usuario no encontrado' });
+            return done(null, false, { message: 'User not found' });
         }
-        console.log('Contraseña ingresada:', password);
-        console.log('Contraseña almacenada (hash):', user.password);
+        console.log('Password', password);
+        console.log('Hash', user.password);
 
         const isMatch = await bcrypt.compare(password, user.password);
-        console.log('Contraseña coincide:', isMatch);
+        console.log('Password matches', isMatch);
 
         if (!isMatch) {
-            return done(null, false, { message: 'Contraseña incorrecta' });
+            return done(null, false, { message: 'Incorrect password' });
         }
         return done(null, user);
     } catch (err) {
